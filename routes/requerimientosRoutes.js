@@ -30,8 +30,11 @@ router.post('/aprobar-rechazar', requerimientosController.aprobarRechazar);
 router.get('/aprobados', requerimientosController.listarAprobados);
 router.post('/revision-final', requerimientosController.revisionFinal);
 router.get('/todos', requerimientosController.obtenerTodos);
+router.get('/publicados', requerimientosController.obtenerPublicados);
 
 router.get('/historial/:id', requerimientosController.verHistorial);
 router.get('/seguimiento/:id', requerimientosController.verSeguimiento);
+router.get('/mis-requerimientos', requerimientosController.listarPorUsuario);
+router.get('/:id/detalle', requerimientosController.obtenerDetalleCompleto);
 
 module.exports = router;

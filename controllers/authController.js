@@ -23,7 +23,18 @@ exports.login = (req, res) => {
         nombre: usuario.nombre
       }, JWT_SECRET, { expiresIn: '1h' });
 
-      res.json({ mensaje: 'Login exitoso', token });
+      res.json({
+        mensaje: 'Login exitoso',
+        token,
+        usuario: {
+          id_usuario: usuario.id_usuario,
+          nombre: usuario.nombre,
+          rol: usuario.rol,
+          id_departamento: usuario.id_departamento
+        }
+      });
+      
+      
     });
   });
 };

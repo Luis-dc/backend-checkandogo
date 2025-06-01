@@ -17,10 +17,19 @@ exports.subirRequerimiento = (req, res) => {
 };
 
 exports.listarPendientes = (req, res) => {
-  Requerimiento.buscarPendientes((err, results) => {
-    if (err) return res.status(500).json({ error: 'Error al obtener requerimientos' });
-    res.json(results);
-  });
+  const id_departamento = req.query.departamento;   // p.ej. ?departamento=3
+
+  if (!id_departamento) {
+    return res.status(400).json({ error: 'Departamento requerido' });
+  }
+
+  Requerimiento.buscarPendientesPorDepartamento(
+    id_departamento,
+    (err, results) => {
+      if (err) return res.status(500).json({ error: 'Error al obtener requerimientos' });
+      res.json(results);
+    }
+  );
 };
 
 exports.aprobarRechazar = (req, res) => {
@@ -29,11 +38,6 @@ exports.aprobarRechazar = (req, res) => {
   if (!['Aprobado', 'Rechazado'].includes(estado)) {
     return res.status(400).json({ error: 'Estado inválido' });
   }
-
-  Requerimiento.actualizarEstado(id_requerimiento, estado, observaciones, id_usuario, (err) => {
-    if (err) return res.status(500).json({ error: 'Error al actualizar estado' });
-    res.json({ mensaje: `Requerimiento ${estado.toLowerCase()} correctamente` });
-  });
 
   Requerimiento.actualizarEstado(id_requerimiento, estado, observaciones, id_usuario, (err) => {
     if (err) return res.status(500).json({ error: 'Error al actualizar estado' });
@@ -102,6 +106,53 @@ exports.verSeguimiento = (req, res) => {
   const { id } = req.params;
   Requerimiento.obtenerSeguimientoPorRequerimiento(id, (err, results) => {
     if (err) return res.status(500).json({ error: 'Error al obtener seguimiento' });
+    res.json(results);
+  });
+};
+
+exports.listarPorUsuario = (req, res) => {
+  const id_usuario = req.query.id_usuario;
+
+  if (!id_usuario) {
+    return res.status(400).json({ error: 'ID de usuario requerido' });
+  }
+
+  Requerimiento.buscarPorUsuario(id_usuario, (err, results) => {
+    if (err) return res.status(500).json({ error: 'Error al obtener requerimientos' });
+    res.json(results);
+  });
+};
+
+exports.obtenerDetalleCompleto = (req, res) => {
+  const id = req.params.id;
+
+  Requerimiento.obtenerDetalle(id, (err, detalle) => {
+    if (err) return res.status(500).json({ error: 'Error al obtener detalle' });
+
+    Requerimiento.obtenerHistorial(id, (errHist, historial) => {
+      if (errHist) return res.status(500).json({ error: 'Error al obtener historial' });
+
+      Requerimiento.obtenerSeguimiento(id, (errSeg, seguimiento) => {
+        if (errSeg) return res.status(500).json({ error: 'Error al obtener seguimiento' });
+
+        Requerimiento.obtenerAprobaciones(id, (errAprob, aprobaciones) => {
+          if (errAprob) return res.status(500).json({ error: 'Error al obtener aprobaciones' });
+
+          res.json({
+            detalle: detalle[0],
+            historial,
+            seguimiento,
+            aprobaciones
+          });
+        });
+      });
+    });
+  });
+};
+
+exports.obtenerPublicados = (req, res) => {
+  Requerimiento.buscarPublicados((err, results) => {
+    if (err) return res.status(500).json({ error: 'Error al obtener publicados' });
     res.json(results);
   });
 };
